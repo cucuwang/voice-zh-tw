@@ -34,7 +34,9 @@ claude plugin install voice-zh-tw --marketplace cucuwang/voice-zh-tw
 
 ## 運作方式
 
-聽寫結果寫進輸入框時，Claude Code 會觸發 `prompt.change` 事件，來源標記為 `engine`。mod 只處理這個來源，用 OpenCC 的 `s2twp` 規則（簡體 → 繁體 → 台灣用字與用語）轉換後，用 `$.prompt.fill` 替換輸入框的內容。打字（`prompt.edit`）與 mod 自己的寫入（來源 `plugin`）都不會處理。
+- 按住空白鍵模式：聽寫結果寫進輸入框時，Claude Code 觸發 `prompt.change` 事件（來源 `engine`）。mod 用 OpenCC 的 `s2twp` 規則（簡體 → 繁體 → 台灣用字與用語）轉換，確認輸入框仍是同一段文字後，用 `$.prompt.fill` 替換。
+- 點一下模式：聽寫完會直接送出，不會先觸發 `prompt.change`。mod 平時記著輸入框裡打字、貼上（`prompt.edit`）與已換好的文字；送出時（`prompt.submit`）多出來的那段就是聽寫內容，只轉那一段再送出。
+- 打字、貼上和歷史紀錄叫回的文字都不轉。
 
 ## 致謝
 

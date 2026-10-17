@@ -3,71 +3,78 @@ import type { Register } from 'claude-code'
 // 簡體 → 台灣繁體，含台灣慣用詞（软件 → 軟體）
 import { toTaiwan } from './vendor/s2twp.js'
 
-const NAME = 'voice-zh-tw'
+// 只轉 `text` 裡和 `known` 不同的那一段（聽寫進來的部分），其餘原樣保留
+export const convertNew = (known: string, text: string): string => {
+  let start = 0
+  while (start < known.length && start < text.length && known[start] === text[start]) {
+    start++
+  }
 
-// 最近一次聽寫：engine 寫進輸入框的原文、轉換後的文字、是否已被送出
-type Pending = { raw: string; converted: string; isSubmitted: boolean }
+  let end = 0
+  while (
+    end < known.length - start &&
+    end < text.length - start &&
+    known[known.length - 1 - end] === text[text.length - 1 - end]
+  ) {
+    end++
+  }
+
+  const middle = text.slice(start, text.length - end)
+
+  return text.slice(0, start) + toTaiwan(middle) + text.slice(text.length - end)
+}
 
 export const register: Register = on => {
-  let pending: Pending | undefined
+  // 輸入框裡「已知來源」的文字：打字、貼上、歷史紀錄、本 mod 換好的字
+  let known = ''
+
+  on('prompt.edit', async ($, e, next) => {
+    const box = await next(e)
+    known = box.text
+
+    return box
+  })
 
   on('prompt.change', async ($, e, next) => {
-    // 本 mod 自己的 fill 落地。若訊息已先送出，這份繁體是多出來的，清掉
-    if (e.origin.kind === 'plugin' && e.origin.name === NAME) {
-      const result = await next(e)
-      const p = pending
+    const result = await next(e)
 
-      if (p?.isSubmitted && e.text === p.converted) {
-        pending = undefined
-        await $.prompt.fill({ text: '', mode: 'replace' })
-      }
+    // 聽寫結果寫進輸入框時，engine 標記來源為 `engine`
+    if (e.origin.kind !== 'engine') {
+      known = e.text
 
       return result
     }
 
-    // 聽寫結果寫進輸入框時，engine 標記來源為 `engine`。
-    // 自己打字走 prompt.edit、貼上也是，不會被轉。
-    if (e.origin.kind !== 'engine') {
-      return next(e)
-    }
-
-    const converted = toTaiwan(e.text)
+    const converted = convertNew(known, e.text)
 
     if (converted === e.text) {
-      return next(e)
+      known = e.text
+
+      return result
     }
 
-    const p: Pending = { raw: e.text, converted, isSubmitted: false }
-    pending = p
+    // 只在輸入框還是這段文字時才換；已經送出、清空就不寫回
+    const box = await $.prompt.read()
 
-    const result = await next(e)
-
-    // 點一下模式可能在換字前就送出了；送出時已換好，不再寫回輸入框
-    if (!p.isSubmitted) {
+    if (box.text === e.text) {
+      known = converted
       await $.prompt.fill({ text: converted, mode: 'replace' })
     }
 
     return result
   })
 
-  // 保險：送出的文字若還含剛聽寫、尚未轉換的原文，只換掉那一段
+  // 點一下模式聽寫完直接送出，不會先觸發 prompt.change：
+  // 送出的文字裡不是打字、貼上或已換好的那段，就是聽寫內容，在這裡換
   on('prompt.submit', ($, e, next) => {
-    const p = pending
-
-    if (!p || e.command || p.isSubmitted) {
+    if (e.command) {
       return next(e)
     }
 
-    if (e.text.includes(p.raw)) {
-      p.isSubmitted = true
+    const text = e.text === known ? e.text : convertNew(known, e.text)
+    known = ''
 
-      return next({ ...e, text: e.text.replace(p.raw, p.converted) })
-    }
-
-    if (e.text.includes(p.converted)) {
-      pending = undefined
-    }
-
-    return next(e)
+    return next(text === e.text ? e : { ...e, text })
   })
 }
+
