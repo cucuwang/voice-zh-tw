@@ -39,3 +39,7 @@ claude plugin install voice-zh-tw --marketplace cucuwang/voice-zh-tw
 ## 致謝
 
 轉換字典與核心程式來自 [opencc-js](https://github.com/nk2028/opencc-js) 1.0.5（MIT 授權，見 `hooks/vendor/OPENCC-JS-LICENSE.txt`），字典源自 [OpenCC](https://github.com/BYVoid/OpenCC)。
+
+## 授權
+
+MIT，見 [LICENSE](LICENSE)。內含的 opencc-js 程式與字典另依其 MIT 授權（`hooks/vendor/OPENCC-JS-LICENSE.txt`）。
