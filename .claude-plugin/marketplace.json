@@ -1,0 +1,14 @@
+{
+  "name": "voice-zh-tw",
+  "owner": {
+    "name": "cucuwang"
+  },
+  "plugins": [
+    {
+      "name": "voice-zh-tw",
+      "source": "./",
+      "description": "把 /voice 聽寫進輸入框的簡體中文自動轉成台灣繁體（OpenCC s2twp）"
+    }
+  ],
+  "description": "Claude Code /voice 聽寫簡轉繁（台灣用語）"
+}
