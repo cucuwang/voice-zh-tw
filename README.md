@@ -9,6 +9,10 @@ Claude Code 的 `/voice` 聽寫目前沒有中文選項，講中文時轉出來�
 
 只轉聽寫來的文字。自己打的字、貼上的內容、已經是繁體的文字都不會被改。
 
+![voice-zh-tw 轉換示範](demo/voice-zh-tw.gif)
+
+示範用腳本模擬 `/voice` 的聽寫輸入，走的是 mod 實際的轉換程式，沒有錄音，也不代表語音辨識的準確度。重錄方式見 [demo/README.md](demo/README.md)。
+
 ## 安裝
 
 在 Claude Code 的輸入框輸入：
