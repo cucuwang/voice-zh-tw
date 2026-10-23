@@ -1,9 +1,10 @@
 import type { Register } from 'claude-code'
 
 // 簡體 → 台灣繁體，含台灣慣用詞（软件 → 軟體）
-import { toTaiwan } from './vendor/s2twp.js'
+import { hasSimplified, toTaiwan } from './vendor/s2twp.js'
 
-// 只轉 `text` 裡和 `known` 不同的那一段（聽寫進來的部分），其餘原樣保留
+// 只轉 `text` 裡和 `known` 不同的那一段（聽寫進來的部分），其餘原樣保留。
+// 那一段沒有簡體字就不動：打的繁體字（例如「文件」）不會被換成台灣用語
 export const convertNew = (known: string, text: string): string => {
   let start = 0
   while (start < known.length && start < text.length && known[start] === text[start]) {
@@ -20,6 +21,10 @@ export const convertNew = (known: string, text: string): string => {
   }
 
   const middle = text.slice(start, text.length - end)
+
+  if (!hasSimplified(middle)) {
+    return text
+  }
 
   return text.slice(0, start) + toTaiwan(middle) + text.slice(text.length - end)
 }
