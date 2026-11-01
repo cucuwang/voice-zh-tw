@@ -28,6 +28,14 @@ claude plugin test .
 
 `claude-code/testing` 由 CLI 測試 runtime 提供，直接執行 `bun test` 會找不到這個模組。這些測試使用模擬的 prompt 事件，不需要真實麥克風或模型請求。
 
+另有兩個不依賴 CLI 測試 runtime 的規格測試，直接以 Bun 執行：
+
+```sh
+bun test hooks/continuous-dictation.test.mjs hooks/register.regression.test.mjs
+```
+
+預期為 42 pass、0 fail。`continuous-dictation` 涵蓋分段聽寫整段轉換（鼠 → 鼠标 得 滑鼠）、各種打斷情形、寫回前再讀一次，以及 500 組隨機事件序列下手打文字不被改動或遺失；`register.regression` 是 10/23 修正分支留下的回歸案例。
+
 ## 靜態檢查
 
 ```sh
