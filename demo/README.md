@@ -20,6 +20,10 @@ node demo/simulate.mjs
 node demo/simulate.mjs --quick
 ```
 
+成功時最後一行顯示 `示範完成 · 4 組結果已核對 · 模擬輸入，無錄音`。查看選項可執行 `node demo/simulate.mjs --help`；未知選項會顯示錯誤並以狀態碼 1 結束。
+
+CLI 測試與 Claude Code hook 測試的指令見[開發與檢查](../docs/development.md)。
+
 ## 重錄 GIF 與 MP4
 
 需要 VHS、ffmpeg、ttyd，以及 VHS 使用的瀏覽器環境。終端機字型須能顯示中文，例如 macOS 的 PingFang TC。先檢查 tape 語法，再錄製。

@@ -1,6 +1,32 @@
 import assert from 'node:assert/strict'
 import { setTimeout as sleep } from 'node:timers/promises'
+import { parseArgs } from 'node:util'
 import { register } from '../hooks/register.ts'
+
+let options
+try {
+  options = parseArgs({
+    options: {
+      quick: { type: 'boolean' },
+      help: { type: 'boolean', short: 'h' },
+    },
+  }).values
+} catch (error) {
+  console.error(error.message)
+  console.error('Run node demo/simulate.mjs --help for usage.')
+  process.exit(1)
+}
+
+if (options.help) {
+  console.log(`Usage: node demo/simulate.mjs [--quick] [--help]
+
+Simulate dictation with the real conversion hooks; no microphone or API key needed.
+Requires Node.js 22.18 or later with TypeScript execution enabled.
+
+  --quick     Skip presentation delays and check all four examples.
+  -h, --help  Show this help.`)
+  process.exit(0)
+}
 
 // Local prompt adapter only. Conversion and source filtering run in the real hooks.
 const handlers = new Map()
@@ -32,7 +58,7 @@ async function edit(text) {
   })
 }
 
-const pause = (ms) => process.argv.includes('--quick') ? Promise.resolve() : sleep(ms)
+const pause = (ms) => options.quick ? Promise.resolve() : sleep(ms)
 async function example(title, label, input, expected, action) {
   console.log(`\n${title}`)
   console.log(`${label} → ${input}`)
